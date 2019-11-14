@@ -1,4 +1,4 @@
-package Jsoup;
+package SwingDemo;
 
 import javax.swing.*;
 
