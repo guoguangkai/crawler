@@ -1,69 +1,66 @@
 package test;
 
-
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.*;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+
 import java.io.IOException;
-import java.util.Iterator;
+import java.net.URL;
 
 public class HttpClient {
     public static void main(String[] args) throws IOException {
-        // 得到浏览器对象
-        WebClient webclient = new WebClient();
-        // 加载css和javaScript
-        webclient.getOptions().setCssEnabled(true);
+        WebClient webclient = new WebClient(BrowserVersion.CHROME);
+        System.out.println("初始化谷歌浏览器");
+        webclient.getOptions().setCssEnabled(false);
+        System.out.println("禁用css，避免自动二次请求进行渲染");
         webclient.getOptions().setJavaScriptEnabled(true);
-        // 获取指定网页实体
-        HtmlPage page = (HtmlPage) webclient.getPage("https://c.qq.com/");
-        //通过div找到按钮
-       /* DomNodeList<DomElement> elements = page.getElementsByTagName("div");
-        for (int i = 0; i < elements.size(); i++) {
-            String str = "HtmlDivision[<div class=\"mod-userbox-login\">]";
-            DomElement element = elements.get(i);
-            String elementStr = element.toString();
-            boolean flag = str.equals(elementStr);
-            if (flag) {
-                Iterable<DomElement> childElements = element.getChildElements();
-                Iterator<DomElement> iterator = childElements.iterator();
-                while (iterator.hasNext()) {
-                    DomElement element1 = iterator.next();
-                    HtmlPage page1 = element1.click();
-                    *//*System.out.println(page1.asXml());*//*
-                    System.out.println(page1.getUrl());
-                    System.out.println("-----------------------------------------------------------------------------------------------------------------------------------");
-                }
-    }
-} */
-
-               /* for (int j = 0; j < inputPage.getElementsByTagName("a").size(); j++) {
-                    System.out.println(inputPage.getElementsByTagName("a").get(j));
-                }*/
-                /*HtmlInput btn = (HtmlInput) page.getHtmlElementById("switcher_plogin");
-                btn.click();*/
-                /*HtmlInput user = inputPage.getHtmlElementById("u");
-                user.setValueAttribute("2019559678");
-                HtmlInput pwd = inputPage.getHtmlElementById("p");
-                pwd.setValueAttribute("zgx@0023");
-                // 获取搜索按钮
-                HtmlInput btn = (HtmlInput) page.getHtmlElementById("login_button");
-                // “点击” 登录
-                HtmlPage newPage = btn.click();
-                System.out.println(newPage);*/
-
-        DomNodeList<DomElement> testElements = page.getElementsByTagName("a");
-        for (int j = 0; j < testElements.size(); j++) {
-            String str="HtmlAnchor[<a href=\"/TxZone\" _stat_click_id=\"1_94\" target=\"_blank\" class=\"mod-nav-item\">]";
-            DomElement element = testElements.get(j);
-            String elementStr = element.toString();
-            boolean flag = str.equals(elementStr);
-            if (flag) {
+        System.out.println("忽略ssl认证");
+        webclient.setAjaxController(new NicelyResynchronizingAjaxController());
+        System.out.println("支持ajax");
+        HtmlPage page = webclient.getPage("https://c.qq.com/");
+        System.out.println("获取登录网页");
+        HtmlElement iframeElement = page.getHtmlElementById("oPopup-loginDialog");
+        System.out.println("获取内联框架");
+        String url = String.format("https:" + iframeElement.getAttribute("src"));
+        WebRequest webRequest = new WebRequest(new URL(url));
+        webRequest.setHttpMethod(HttpMethod.GET);
+        System.out.println("获取异步url");
+        boolean b = webclient.getAjaxController().processSynchron(page, webRequest, true);
+        System.out.println(b);
+       /* DomNodeList<DomElement> alist = page.getElementsByTagName("a");
+        String str = "HtmlAnchor[<a href=\"javascript:void(0);\" class=\"btn jmod-index-login\" _stat_click_id=\"5_01\">]";
+        for (DomElement element : alist) {
+            if (str.equals(element.toString())) {
+                System.out.println("获取【立即登录】按钮");
                 HtmlPage page1 = element.click();
-                System.out.println(page1.asXml());
-                System.out.println(page1.getUrl());
+                System.out.println("点击【立即登录】");
+                FrameWindow login_frame = page1.getFrameByName("login_frame");
+                System.out.println("获取iframe");
+
             }
         }
+
+       https://xui.ptlogin2.qq.com/cgi-bin/xlogin?appid=710023101&style=20&s_url=https%3A%2F%2Fc.qq.com%2Fhtml%2Fproxy%2FloginSuccess.html&target=self*/
+        DomElement switcherPlogin = page.getElementById("switcher_plogin");
+        HtmlPage page1 = switcherPlogin.click();
+        System.out.println("切换到账号密码登录");
+        System.out.println("===============================开始登陆========================================");
+        HtmlForm loginform = page1.getFormByName("loginform");
+        System.out.println("获取表单");
+        HtmlTextInput user = loginform.getInputByName("u");
+        HtmlPasswordInput passwd = loginform.getInputByName("p");
+        HtmlSubmitInput button = loginform.getInputByValue("登 录");
+        //元素赋值
+        user.setValueAttribute("2019559678");
+        passwd.setValueAttribute("zgx@0023");
+        System.out.println("用户名："+user.getValueAttribute()+"密码："+passwd.getValueAttribute()+"");
+        //5.提交
+        System.out.println("点击【"+button.getValueAttribute()+"】");
+        HtmlPage page2 = button.click();
+        System.out.println(page2.asXml());
+        System.out.println(page2.getUrl());
     }
 }
+
 
 
