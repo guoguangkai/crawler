@@ -7,12 +7,18 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 
 public class Exe extends Thread{
@@ -29,6 +35,19 @@ public class Exe extends Thread{
     //账号 密码
     private String userNum = "";
     private String passwdNum = "";
+    /*DateFormat.getDateInstance()为获取当前日期
+     * DateFormat.getTimeInstance()为获取当前时间
+     * DateFormat.getDateTimeInstance()为获取当前日期时间
+     */
+    Date date = new Date();
+    DateFormat df = DateFormat.getDateTimeInstance();
+    String nowDateTime = df.format(date);
+    DefaultTableModel model;
+    JTextArea textArea01 =new JTextArea(29, 20);
+    JTextArea textArea= textArea = new JTextArea(25, 20);;
+
+
+
     //通过构造器  校验时多线程传参
     public Exe(String userNum, String passwdNum) {
         this.userNum = userNum;
@@ -40,6 +59,10 @@ public class Exe extends Thread{
     }
 
     public Exe() {
+        //获取JVM的系统属性
+        Properties pps = System.getProperties();
+        pps.list(System.out);
+
         //创建一个顶层容器（窗口）
         jf = new JFrame("中港星自动化程序");
         //设置窗口大小
@@ -94,11 +117,9 @@ public class Exe extends Thread{
         panel01.add(asUsualStartBtn);
         //说明
         JLabel infoLabel = new JLabel();
-        infoLabel.setText("     ↓ 账号列表 ↓     ");
+        infoLabel.setText("    ▼  账号列表  ▼    ");
         infoLabel.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
         panel01.add(infoLabel);
-        // 显示域
-        final JTextArea textArea01 = new JTextArea(29, 20);
         // 设置自动换行
         textArea01.setLineWrap(true);
         //背景颜色
@@ -108,11 +129,7 @@ public class Exe extends Thread{
         //自动换行
         textArea01.setLineWrap(true);
         //获取账号列表
-        Set<String> keys = ExeFile.getKeys();
-        int i = 0;
-        for (String key : keys) {
-            textArea01.append("【"+ ++i +"】 "+""+key+""+"\r\n");
-        }
+       setTextArea(textArea01);
         // 创建滚动面板, 指定滚动显示的视图组件(textArea), 垂直滚动条一直显示, 水平滚动条从不显示
         JScrollPane scrollPane01 = new JScrollPane(
                 textArea01,
@@ -149,7 +166,6 @@ public class Exe extends Thread{
         passwordField.setFont(new Font(null, Font.PLAIN, 20));
         panel02.add(passwordField);
         // 显示域
-        final JTextArea textArea = new JTextArea(25, 20);
         // 设置自动换行
         textArea.setLineWrap(true);
         //背景颜色
@@ -159,12 +175,7 @@ public class Exe extends Thread{
         //自动换行
         textArea.setLineWrap(true);
         //获取账号列表
-        Set<String> keys = ExeFile.getKeys();
-        int i = 0;
-        for (String key : keys) {
-            textArea.append("【" + ++i + "】 " + "" + key + "" + "\r\n");
-        }
-        //todo---------------------------------------------------------------------------------------------------------------------------
+        setTextArea(textArea);
 
         //文本框监听
         final FocusListener focusListener=new FocusListener() {
@@ -303,6 +314,8 @@ public class Exe extends Thread{
         label04.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
         panel03.add(label04);
         final JTextField textField04 = new JTextField(3);
+        //去除边框
+        textField04.setBorder(new EmptyBorder(0,0,0,0));
         textField04.setEditable(false);
         textField04.setFont(new Font(null, Font.PLAIN, 14));
         panel03.add(textField04);
@@ -311,6 +324,8 @@ public class Exe extends Thread{
         label05.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
         panel03.add(label05);
         final JTextField textField05 = new JTextField(3);
+        //去除边框
+        textField05.setBorder(new EmptyBorder(0,0,0,0));
         textField05.setEditable(false);
         textField05.setFont(new Font(null, Font.PLAIN, 11));
         panel03.add(textField05);
@@ -319,6 +334,8 @@ public class Exe extends Thread{
         label03.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
         panel03.add(label03);
         final JTextField textField03 = new JTextField(16);
+        //去除边框
+        textField03.setBorder(new EmptyBorder(0,0,0,0));
         textField03.setEditable(false);
         textField03.setFont(new Font(null, Font.PLAIN, 11));
         panel03.add(textField03);
@@ -378,7 +395,7 @@ public class Exe extends Thread{
         WebDriver driver = null;
         try {
             String key = "webdriver.chrome.driver";
-            String value = "D:\\MyWorkSpace\\soft\\chromedriver.exe";
+            String value = "src/resources/baseSoftware/chromedriver.exe";
             System.setProperty(key, value);
             ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.addArguments("--start-maximized");
@@ -424,7 +441,8 @@ public class Exe extends Thread{
             i++;
         }
         // 创建一个表格，指定 所有行数据 和 表头
-        final JTable table = new JTable(rowData, columnNames);
+        model = new DefaultTableModel(rowData, columnNames);
+        final JTable table = new JTable(model);
         table.setRowHeight(30);
         TableColumn tableColumn1 = table.getColumnModel().getColumn(0);
         tableColumn1.setPreferredWidth(120);
@@ -433,10 +451,14 @@ public class Exe extends Thread{
         panel.add(table.getTableHeader(), BorderLayout.NORTH);
         // 把 表格内容 添加到容器中心
         panel.add(table, BorderLayout.CENTER);
-        JButton deleteBtn = new JButton("确定");
-        deleteBtn.addActionListener(new ActionListener() {
+        //确定按钮
+        JButton okBtn = new JButton("确定");
+        okBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //JTable 失去焦点时取消编辑状态
+                if (table.isEditing())
+                    table.getCellEditor().stopCellEditing();
                 int result = JOptionPane.showConfirmDialog(
                         null,
                         "确认修改？",
@@ -444,17 +466,96 @@ public class Exe extends Thread{
                         JOptionPane.YES_NO_OPTION
                 );
                 if (result == 0) {
-                    for (int k = 0; k < table.getRowCount(); k++) {
-                        for (int j = 0; j < table.getColumnCount(); j++) {
-                            System.out.println(table.getValueAt(k, j));
+                    //更新修改结果，将表格全部数据取出
+                    List<String> keyList = new ArrayList();
+                    List<String> valueList = new ArrayList();
+                    for (int col = 0; col < table.getColumnCount(); col++) {
+                        for (int row = 0; row < table.getRowCount(); row++) {
+                            if (col==0) {
+                                keyList.add((String) table.getValueAt(row, col));
+                            }else {
+                                valueList.add((String) table.getValueAt(row, col));
+                            }
                         }
+                    }
+                    //用map封装 键值对
+                    Map<String, String> updateMap = new HashMap<String, String>();
+                    for (int j = 0; j < keyList.size(); j++) {
+                        updateMap.put(keyList.get(j), valueList.get(j));
+                    }
+                    System.out.println("map封装" + updateMap.toString());
+                    //将一个Map<String, String>写入properties文件,并且覆盖原来的内容
+                    try {
+                        ExeFile.writeProperties(updateMap);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    setTextArea(textArea);
+                    jf1.dispose();
+                }
+            }
+        });
+        panel.add(okBtn, BorderLayout.PAGE_END);
+        //删除按钮
+        JButton deleteBtn = new JButton("删除");
+
+        /*Object select = table.getValueAt(selectRol, selectCol);
+        System.out.println(select);*/
+        deleteBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int result = JOptionPane.showConfirmDialog(
+                        null,
+                        "确认删除？",
+                        "提示",
+                        JOptionPane.YES_NO_OPTION
+                );
+                if (result == 0) {
+                    //返回第一个选定行的索引；如果没有选定的行，则返回 -1。
+                    int selectRol = table.getSelectedRow();
+                    if (selectRol == -1) {
+                        JOptionPane.showMessageDialog(null, "请选择要删除的行!");
+                    }else {
+                        model.removeRow(selectRol);
+                    }
+                }
+            }
+        });
+        panel.add(deleteBtn, BorderLayout.PAGE_START);
+       /* //删除按钮
+        JButton deleteAllBtn = new JButton("全部删除");
+        deleteAllBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int result = JOptionPane.showConfirmDialog(
+                        null,
+                        "确认全部删除？",
+                        "提示",
+                        JOptionPane.YES_NO_OPTION
+                );
+                if (result == 0) {
+                    try {
+                        ExeFile.clearProperties();
+                    } catch (IOException ex) {
+                        System.out.println(nowDateTime+"【IO】清空账号异常"+ex);
                     }
                     jf1.dispose();
                 }
             }
         });
-        panel.add(deleteBtn, BorderLayout.PAGE_END);
+        panel.add(deleteAllBtn, BorderLayout.PAGE_START);*/
         return panel;
+    }
+
+    private void setTextArea(JTextArea textAreaDemo) {
+        //清空JTextArea数据
+        textAreaDemo.setText("");
+        //获取账号列表
+        Set<String> keys = ExeFile.getKeys();
+        int i = 0;
+        for (String key : keys) {
+            textAreaDemo.append("【账号" + ++i + "】 " + "" + key + "" + "\r\n");
+        }
     }
 }
 

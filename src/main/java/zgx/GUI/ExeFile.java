@@ -1,14 +1,11 @@
 package zgx.GUI;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 public class ExeFile {
     private static String filepath = "src/resources/account.properties";
-    static InputStream in;
+    static BufferedReader in;
 
     /**
      * 构造函数私有化
@@ -22,9 +19,11 @@ public class ExeFile {
     private static Properties initProperties() throws IOException {
         //在往文件写入时Properties prop 不能多次new , 不然每次写入都会清掉 properties文件
         Properties prop = new Properties();
+       /* FileReader类读取数据实质是InputStreamReader类在读取，而InputStreamReader读取数据实际是StreamDecoder类读取 因此在使用字符输入流的时候实际是StreamDecoder类在发挥作用*/
         //FileInputStream流被称为文件字节输入流，意思指对文件数据以字节的形式进行读取操作如读取图片视频等【以字节为单位，操作中文会乱码】
         //一个英文字母占一个字节，一个中文汉字占两个字节，而一个英文字母与一个中文汉字我们都称之为一个字符【FileReader】
-        in = new BufferedInputStream(new FileInputStream(filepath));
+        //or  InputStream in = getClass().getResourceAsStream("资源Name");
+        in = new BufferedReader(new FileReader(filepath));
         //load(InputStream inStream)，从输入流中读取属性列表（键和元素对）。通过对指定的文件进行装载来获取该文件中的所有键-值对。
         prop.load(in);
         return prop;
@@ -103,7 +102,43 @@ public class ExeFile {
         return map;
     }
 
-    public static void main(String[] args) {
-        System.out.println(getKeyValueMap().toString());
+    //追加写入Properties信息
+    public static void appendProperties( String pKey, String pValue) throws IOException {
+        Properties properties =initProperties();
+        //调用 Hashtable 的方法 put。使用 getProperty 方法提供并行性。
+        //强制要求为属性的键和值使用字符串。返回值是 Hashtable 调用 put 的结果。
+        FileWriter out = new FileWriter(filepath);
+        properties.setProperty(pKey, pValue);
+        //以适合使用 load 方法加载到 Properties 表中的格式，
+        //将此 Properties 表中的属性列表（键和元素对）写入输出流
+       /* #更新 pKey 账号
+        #Mon Nov 18 21:52:57 CST 2019*/
+        properties.store(out, "更新 " + pKey + " 账号");
+        closeIO();
+    }
+
+    //清空Properties信息
+    public static void clearProperties() throws IOException {
+        Properties properties = initProperties();
+        properties.clear();
+        FileWriter out = new FileWriter(filepath);
+        properties.store(out,"清空");
+    }
+
+    /**
+     * 将一个Map<String, String>写入properties文件,并且覆盖原来的内容
+     * @param map
+     * @return
+     */
+    public static void writeProperties(Map<String, String> map) throws IOException {
+        Properties properties=new Properties();
+        for (String key : map.keySet()) {
+            properties.setProperty(key, map.get(key).toString());
+        }
+        OutputStream fos = new FileOutputStream(filepath);
+        properties.store(fos, properties.toString());
+    }
+    public static void main(String[] args) throws IOException {
+        clearProperties();
     }
 }
