@@ -16,17 +16,15 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
 
-public class Exe extends Thread{
-    Map<String,String> map = new HashMap();
+public class Exe extends Thread {
     //进度条常量
     private static final int MIN_PROGRESS = 0;
     private static final int MAX_PROGRESS = 100;
-    private  static int currentProgress = MIN_PROGRESS;
+    private static int currentProgress = MIN_PROGRESS;
     //窗口
     static JFrame jf;
     static JFrame jf1 = new JFrame("编辑");
@@ -35,17 +33,17 @@ public class Exe extends Thread{
     //账号 密码
     private String userNum = "";
     private String passwdNum = "";
-    /*DateFormat.getDateInstance()为获取当前日期
-     * DateFormat.getTimeInstance()为获取当前时间
-     * DateFormat.getDateTimeInstance()为获取当前日期时间
-     */
+    private int finalTotal ;
+    private String currentAccount = "";
+    private String currentAccountOrder = "";
+
     Date date = new Date();
     DateFormat df = DateFormat.getDateTimeInstance();
     String nowDateTime = df.format(date);
     DefaultTableModel model;
-    JTextArea textArea01 =new JTextArea(29, 20);
-    JTextArea textArea= textArea = new JTextArea(25, 20);;
-
+    JTextArea textArea01 = new JTextArea(29, 20);
+    JTextArea textArea = textArea = new JTextArea(25, 20);
+    ;
 
 
     //通过构造器  校验时多线程传参
@@ -75,6 +73,18 @@ public class Exe extends Thread{
         jf.setResizable(false);
     }
 
+    //内部类 开启另一条线程去执行爬虫
+    class ThreadCrawler extends Thread{
+        @Override
+        public void run() {
+            try {
+                Crawler.crawler();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static void main(String[] args) {
         JPanel panel01 = new Exe().getPanel01();
         jf.setContentPane(panel01);
@@ -84,6 +94,7 @@ public class Exe extends Thread{
 
     /**
      * 加载panel01 并返回
+     *
      * @return
      */
     @SuppressWarnings("all")
@@ -108,10 +119,16 @@ public class Exe extends Thread{
         asUsualStartBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                finalTotal = PropertiesUtil.getKeys().size();
                 panel01.hide();
-                jf.setSize(500,800);
+                jf.setSize(500, 800);
                 //把 面板容器 作为窗口的内容面板 设置到 窗口
                 jf.setContentPane(getPanel03());
+                try {
+                    Crawler.crawler();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
         panel01.add(asUsualStartBtn);
@@ -129,7 +146,7 @@ public class Exe extends Thread{
         //自动换行
         textArea01.setLineWrap(true);
         //获取账号列表
-       setTextArea(textArea01);
+        setTextArea(textArea01);
         // 创建滚动面板, 指定滚动显示的视图组件(textArea), 垂直滚动条一直显示, 水平滚动条从不显示
         JScrollPane scrollPane01 = new JScrollPane(
                 textArea01,
@@ -142,6 +159,7 @@ public class Exe extends Thread{
 
     /**
      * 加载panel02 并返回
+     *
      * @return
      */
     private JPanel getPanel02() {
@@ -178,7 +196,7 @@ public class Exe extends Thread{
         setTextArea(textArea);
 
         //文本框监听
-        final FocusListener focusListener=new FocusListener() {
+        final FocusListener focusListener = new FocusListener() {
             //获得鼠标焦点
             @Override
             public void focusGained(FocusEvent e) {
@@ -192,6 +210,7 @@ public class Exe extends Thread{
                 jf1.setVisible(true);
                 textArea.setEnabled(false);
             }
+
             //失去鼠标焦点
             @Override
             public void focusLost(FocusEvent e) {
@@ -213,7 +232,7 @@ public class Exe extends Thread{
                 if (checkInput(userField, passwordField)) {
                     userNum = userField.getText().trim();
                     passwdNum = passwordField.getText().trim();
-                    new Exe(userNum,passwdNum).start();
+                    new Exe(userNum, passwdNum).start();
                 }
             }
         });
@@ -224,10 +243,14 @@ public class Exe extends Thread{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (checkInput(userField, passwordField)) {
-                    System.out.println("提交，账号为: " + userField.getText());
-                    System.out.println("提交，密码为: " + passwordField.getText());
-                    map.put(userField.getText(), passwordField.getText());
-                    textArea.append(userField.getText() + "\r\n");
+                    //将添加账号写入properties
+                    try {
+                        PropertiesUtil.appendProperties(userField.getText(), passwordField.getText());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    int addOrder = PropertiesUtil.getKeys().size();
+                    textArea.append("【账号" + addOrder++ + "】" + userField.getText() + "\r\n");
                     userField.setText("");
                     passwordField.setText("");
                     JOptionPane.showMessageDialog(null, "添加成功", "yeah！", JOptionPane.INFORMATION_MESSAGE);
@@ -240,6 +263,7 @@ public class Exe extends Thread{
         panel02.add(scrollPane);
         // 创建一个按钮，点击后开始运行程序
         JButton startBtn = new JButton("开始程序");
+
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -252,10 +276,13 @@ public class Exe extends Thread{
                 //根据YES_NO_OPTION（确认0，取消1）提示框
                 switch (result) {
                     case 0:
+                        finalTotal = PropertiesUtil.getKeys().size();
+
                         panel02.hide();
-                        jf.setSize(500,800);
+                        jf.setSize(500, 800);
                         JPanel panel03 = getPanel03();
                         jf.setContentPane(panel03);
+                        new ThreadCrawler().start();
                         break;
                     case 1:
                         break;
@@ -268,6 +295,7 @@ public class Exe extends Thread{
 
     /**
      * 加载panel03 并返回
+     *
      * @return
      */
     @SuppressWarnings("all")
@@ -277,7 +305,7 @@ public class Exe extends Thread{
         // 创建一个进度条
         final JProgressBar progressBar = new JProgressBar();
         //设置长度，高度
-        progressBar.setPreferredSize(new Dimension(420,15));
+        progressBar.setPreferredSize(new Dimension(420, 15));
         // 设置进度的 最小值 和 最大值
         progressBar.setMinimum(MIN_PROGRESS);
         progressBar.setMaximum(MAX_PROGRESS);
@@ -315,9 +343,11 @@ public class Exe extends Thread{
         panel03.add(label04);
         final JTextField textField04 = new JTextField(3);
         //去除边框
-        textField04.setBorder(new EmptyBorder(0,0,0,0));
+        textField04.setBorder(new EmptyBorder(0, 0, 0, 0));
         textField04.setEditable(false);
         textField04.setFont(new Font(null, Font.PLAIN, 14));
+        //总条数赋值
+        textField04.setText(String.valueOf(finalTotal));
         panel03.add(textField04);
         JLabel label05 = new JLabel();
         label05.setText("当前序号:");
@@ -325,7 +355,7 @@ public class Exe extends Thread{
         panel03.add(label05);
         final JTextField textField05 = new JTextField(3);
         //去除边框
-        textField05.setBorder(new EmptyBorder(0,0,0,0));
+        textField05.setBorder(new EmptyBorder(0, 0, 0, 0));
         textField05.setEditable(false);
         textField05.setFont(new Font(null, Font.PLAIN, 11));
         panel03.add(textField05);
@@ -335,7 +365,7 @@ public class Exe extends Thread{
         panel03.add(label03);
         final JTextField textField03 = new JTextField(16);
         //去除边框
-        textField03.setBorder(new EmptyBorder(0,0,0,0));
+        textField03.setBorder(new EmptyBorder(0, 0, 0, 0));
         textField03.setEditable(false);
         textField03.setFont(new Font(null, Font.PLAIN, 11));
         panel03.add(textField03);
@@ -362,24 +392,22 @@ public class Exe extends Thread{
 
     /**
      * 校验输入框输入的值
+     *
      * @param userField
      * @param passwordField
      * @return 值有问题返回false，没问题返回true
      */
     private boolean checkInput(JTextField userField, JTextField passwordField) {
-        if(userField.getText().trim().length()==0||new String(passwordField.getText()).trim().length()==0) {
+        if (userField.getText().trim().length() == 0 || new String(passwordField.getText()).trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "账号或密码不允许为空", "提示", JOptionPane.ERROR_MESSAGE);
             return false;
-        }
-        else if(!userField.getText().matches("^[0-9]*$")) {
+        } else if (!userField.getText().matches("^[0-9]*$")) {
             JOptionPane.showMessageDialog(null, "账号有其它字符", "提示", JOptionPane.ERROR_MESSAGE);
             return false;
-        }
-        else if(userField.getText().trim().length()<6){
+        } else if (userField.getText().trim().length() < 6) {
             JOptionPane.showMessageDialog(null, "账号太短", "提示", JOptionPane.ERROR_MESSAGE);
             return false;
-        }
-        else if (passwordField.getText().trim().length()<6){
+        } else if (passwordField.getText().trim().length() < 6) {
             JOptionPane.showMessageDialog(null, "密码太短", "提示", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -387,7 +415,8 @@ public class Exe extends Thread{
     }
 
     /**
-     * 登录腾讯，校验账号
+     * 开启一条
+     * 线程  登录腾讯，校验账号
      */
     @SuppressWarnings("all")
     @Override
@@ -414,7 +443,7 @@ public class Exe extends Thread{
             Thread.sleep(3000);
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             driver.quit();
         }
     }
@@ -424,7 +453,7 @@ public class Exe extends Thread{
         JPanel panel = new JPanel(new BorderLayout());
         // 表头（列名）
         Object[] columnNames = {"账号", "密码"};
-        LinkedHashMap<String, String> keyValueMap = ExeFile.getKeyValueMap();
+        LinkedHashMap<String, String> keyValueMap = PropertiesUtil.getKeyValueMap();
         Set<Map.Entry<String, String>> entries = keyValueMap.entrySet();
         Iterator<Map.Entry<String, String>> iterator = entries.iterator();
         int rows = entries.size();
@@ -452,7 +481,7 @@ public class Exe extends Thread{
         // 把 表格内容 添加到容器中心
         panel.add(table, BorderLayout.CENTER);
         //确定按钮
-        JButton okBtn = new JButton("确定");
+        JButton okBtn = new JButton("确认修改");
         okBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -471,9 +500,9 @@ public class Exe extends Thread{
                     List<String> valueList = new ArrayList();
                     for (int col = 0; col < table.getColumnCount(); col++) {
                         for (int row = 0; row < table.getRowCount(); row++) {
-                            if (col==0) {
+                            if (col == 0) {
                                 keyList.add((String) table.getValueAt(row, col));
-                            }else {
+                            } else {
                                 valueList.add((String) table.getValueAt(row, col));
                             }
                         }
@@ -486,7 +515,7 @@ public class Exe extends Thread{
                     System.out.println("map封装" + updateMap.toString());
                     //将一个Map<String, String>写入properties文件,并且覆盖原来的内容
                     try {
-                        ExeFile.writeProperties(updateMap);
+                        PropertiesUtil.writeProperties(updateMap);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -495,12 +524,9 @@ public class Exe extends Thread{
                 }
             }
         });
-        panel.add(okBtn, BorderLayout.PAGE_END);
+        panel.add(okBtn, BorderLayout.PAGE_START);
         //删除按钮
         JButton deleteBtn = new JButton("删除");
-
-        /*Object select = table.getValueAt(selectRol, selectCol);
-        System.out.println(select);*/
         deleteBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -515,13 +541,13 @@ public class Exe extends Thread{
                     int selectRol = table.getSelectedRow();
                     if (selectRol == -1) {
                         JOptionPane.showMessageDialog(null, "请选择要删除的行!");
-                    }else {
+                    } else {
                         model.removeRow(selectRol);
                     }
                 }
             }
         });
-        panel.add(deleteBtn, BorderLayout.PAGE_START);
+        panel.add(deleteBtn, BorderLayout.PAGE_END);
        /* //删除按钮
         JButton deleteAllBtn = new JButton("全部删除");
         deleteAllBtn.addActionListener(new ActionListener() {
@@ -551,7 +577,7 @@ public class Exe extends Thread{
         //清空JTextArea数据
         textAreaDemo.setText("");
         //获取账号列表
-        Set<String> keys = ExeFile.getKeys();
+        Set<String> keys = PropertiesUtil.getKeys();
         int i = 0;
         for (String key : keys) {
             textAreaDemo.append("【账号" + ++i + "】 " + "" + key + "" + "\r\n");

@@ -3,14 +3,14 @@ package zgx.GUI;
 import java.io.*;
 import java.util.*;
 
-public class ExeFile {
+public class PropertiesUtil {
     private static String filepath = "src/resources/account.properties";
     static BufferedReader in;
 
     /**
      * 构造函数私有化
      */
-    private ExeFile() {
+    private PropertiesUtil() {
     }
 
     /**
@@ -138,6 +138,9 @@ public class ExeFile {
         OutputStream fos = new FileOutputStream(filepath);
         properties.store(fos, properties.toString());
     }
+
+
+
     public static void main(String[] args) throws IOException {
         clearProperties();
     }
