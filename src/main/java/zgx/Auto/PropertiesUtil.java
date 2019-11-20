@@ -1,10 +1,9 @@
-package zgx.GUI;
+package zgx.Auto;
 
 import java.io.*;
 import java.util.*;
 
 public class PropertiesUtil {
-    private static String filepath = "src/resources/account.properties";
     static BufferedReader in;
 
     /**
@@ -16,7 +15,7 @@ public class PropertiesUtil {
     /**
      * properties的初始化操作
      */
-    private static Properties initProperties() throws IOException {
+    private static Properties initProperties(String filepath) throws IOException {
         //在往文件写入时Properties prop 不能多次new , 不然每次写入都会清掉 properties文件
         Properties prop = new Properties();
        /* FileReader类读取数据实质是InputStreamReader类在读取，而InputStreamReader读取数据实际是StreamDecoder类读取 因此在使用字符输入流的时候实际是StreamDecoder类在发挥作用*/
@@ -46,10 +45,10 @@ public class PropertiesUtil {
      * @param key
      * @return
      */
-    public static String getValueByKey(String key) {
+    public static String getValueByKey(String filepath,String key) {
         String value = null;
         try {
-            Properties properties = initProperties();
+            Properties properties = initProperties(filepath);
             //用指定的键在此属性列表中搜索属性。也就是通过参数key，得到key所对应的value。
             value = properties.getProperty(key);
         } catch (Exception e) {
@@ -65,10 +64,10 @@ public class PropertiesUtil {
      *
      * @return
      */
-    public static Set<String> getKeys() {
+    public static Set<String> getKeys(String filepath) {
         Set<String> keys = null;
         try {
-            Properties properties = initProperties();
+            Properties properties = initProperties(filepath);
             keys = properties.stringPropertyNames();
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,11 +81,11 @@ public class PropertiesUtil {
      * 获取所有键值对
      * @return
      */
-    public static LinkedHashMap<String, String> getKeyValueMap() {
+    public static LinkedHashMap<String, String> getKeyValueMap(String filepath) {
         Set<String> keys = null;
         LinkedHashMap<String,String> map = new LinkedHashMap<String, String>();
         try {
-            Properties properties = initProperties();
+            Properties properties = initProperties(filepath);
             keys = properties.stringPropertyNames();
             Iterator<String> iterator = keys.iterator();
             while (iterator.hasNext()) {
@@ -103,8 +102,8 @@ public class PropertiesUtil {
     }
 
     //追加写入Properties信息
-    public static void appendProperties( String pKey, String pValue) throws IOException {
-        Properties properties =initProperties();
+    public static void appendProperties(String filepath,String pKey, String pValue) throws IOException {
+        Properties properties =initProperties(filepath);
         //调用 Hashtable 的方法 put。使用 getProperty 方法提供并行性。
         //强制要求为属性的键和值使用字符串。返回值是 Hashtable 调用 put 的结果。
         FileWriter out = new FileWriter(filepath);
@@ -118,11 +117,13 @@ public class PropertiesUtil {
     }
 
     //清空Properties信息
-    public static void clearProperties() throws IOException {
-        Properties properties = initProperties();
+    public static void clearProperties(String filepath) throws IOException {
+        Properties properties = initProperties(filepath);
         properties.clear();
         FileWriter out = new FileWriter(filepath);
         properties.store(out,"清空");
+        out.close();
+        closeIO();
     }
 
     /**
@@ -130,18 +131,19 @@ public class PropertiesUtil {
      * @param map
      * @return
      */
-    public static void writeProperties(Map<String, String> map) throws IOException {
-        Properties properties=new Properties();
+    public static void writeProperties(String filepath,Map<String, String> map) throws IOException {
+       /* Properties properties=new Properties();
         for (String key : map.keySet()) {
-            properties.setProperty(key, map.get(key).toString());
+            properties.setProperty(key, map.get(key));
         }
-        OutputStream fos = new FileOutputStream(filepath);
-        properties.store(fos, properties.toString());
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(filepath)), "UTF-8"));
+        properties.store(bw,properties.toString());
+        bw.close();*/
+
     }
 
 
 
     public static void main(String[] args) throws IOException {
-        clearProperties();
     }
 }

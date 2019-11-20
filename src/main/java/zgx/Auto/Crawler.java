@@ -1,4 +1,4 @@
-package zgx.GUI;
+package zgx.Auto;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -6,7 +6,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 public class Crawler{

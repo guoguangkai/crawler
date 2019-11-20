@@ -1,4 +1,4 @@
-package zgx.GUI;
+package zgx.Auto;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -13,7 +13,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.*;
@@ -33,16 +36,19 @@ public class Exe extends Thread {
     //账号 密码
     private String userNum = "";
     private String passwdNum = "";
-    private int finalTotal ;
+    private static int totalAccount ;
+    private int totalUrl ;
     private String currentAccount = "";
     private String currentAccountOrder = "";
+    String accountFilePath = "src/resources/account.properties";
+    String urlFilePath = "src/resources/url.properties";
 
     Date date = new Date();
     DateFormat df = DateFormat.getDateTimeInstance();
     String nowDateTime = df.format(date);
     DefaultTableModel model;
     JTextArea textArea01 = new JTextArea(29, 20);
-    JTextArea textArea = textArea = new JTextArea(25, 20);
+    JTextArea textArea  = new JTextArea(25, 20);
     ;
 
 
@@ -50,10 +56,6 @@ public class Exe extends Thread {
     public Exe(String userNum, String passwdNum) {
         this.userNum = userNum;
         this.passwdNum = passwdNum;
-    }
-
-    public JFrame getJf1() {
-        return jf1;
     }
 
     public Exe() {
@@ -71,6 +73,8 @@ public class Exe extends Thread {
         jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         //禁止缩放
         jf.setResizable(false);
+
+        totalUrl = PropertiesUtil.getKeys(urlFilePath).size();
     }
 
     //内部类 开启另一条线程去执行爬虫
@@ -78,7 +82,7 @@ public class Exe extends Thread {
         @Override
         public void run() {
             try {
-                Crawler.crawler();
+                CrawlerUrl.CrawlerUrl(urlFilePath,accountFilePath,totalAccount,totalUrl);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -90,6 +94,7 @@ public class Exe extends Thread {
         jf.setContentPane(panel01);
         //显示窗口，前面创建的信息都在内存中，通过 jf.setVisible(true) 把内存中的窗口显示在屏幕上。
         jf.setVisible(true);
+
     }
 
     /**
@@ -113,20 +118,41 @@ public class Exe extends Thread {
             }
         });
         panel01.add(editBtn);
+        // 创建 产品管理 按钮
+        final JButton productBtn = new JButton("    产品管理    ");
+        // 添加按钮的点击事件监听器
+        productBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                panel01.hide();
+                SwingUtilities.invokeLater(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                JPanel panel02_product = getPanel02_product();
+                                //把 面板容器 作为窗口的内容面板 设置到 窗口
+                                jf.setContentPane(panel02_product);
+                            }
+                        }
+                );
+            }
+        });
+        panel01.add(productBtn);
         // 创建 直接开始 按钮
-        final JButton asUsualStartBtn = new JButton("无需管理账号，直接开始");
+        final JButton asUsualStartBtn = new JButton("无需管理账号及产品，直接开始");
         // 添加按钮的点击事件监听器
         asUsualStartBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                finalTotal = PropertiesUtil.getKeys().size();
+                totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
                 panel01.hide();
                 jf.setSize(500, 800);
                 //把 面板容器 作为窗口的内容面板 设置到 窗口
-                jf.setContentPane(getPanel03());
+                JPanel panel03 = getPanel03();
+                jf.setContentPane(panel03);
                 try {
-                    Crawler.crawler();
-                } catch (InterruptedException ex) {
+                    new ThreadCrawler().start();
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
@@ -245,11 +271,11 @@ public class Exe extends Thread {
                 if (checkInput(userField, passwordField)) {
                     //将添加账号写入properties
                     try {
-                        PropertiesUtil.appendProperties(userField.getText(), passwordField.getText());
+                        PropertiesUtil.appendProperties(accountFilePath,userField.getText(), passwordField.getText());
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
-                    int addOrder = PropertiesUtil.getKeys().size();
+                    int addOrder = PropertiesUtil.getKeys(accountFilePath).size();
                     textArea.append("【账号" + addOrder++ + "】" + userField.getText() + "\r\n");
                     userField.setText("");
                     passwordField.setText("");
@@ -276,8 +302,7 @@ public class Exe extends Thread {
                 //根据YES_NO_OPTION（确认0，取消1）提示框
                 switch (result) {
                     case 0:
-                        finalTotal = PropertiesUtil.getKeys().size();
-
+                        totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
                         panel02.hide();
                         jf.setSize(500, 800);
                         JPanel panel03 = getPanel03();
@@ -299,7 +324,7 @@ public class Exe extends Thread {
      * @return
      */
     @SuppressWarnings("all")
-    private JPanel getPanel03() {
+    private static JPanel getPanel03() {
         JPanel panel03 = new JPanel();
 
         // 创建一个进度条
@@ -317,8 +342,8 @@ public class Exe extends Thread {
         progressBar.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                System.out.println("当前进度值: " + progressBar.getValue() + "; " +
-                        "进度百分比: " + progressBar.getPercentComplete());
+               /* System.out.println("当前进度值: " + progressBar.getValue() + "; " +
+                        "进度百分比: " + progressBar.getPercentComplete());*/
             }
         });
         // 添加到内容面板
@@ -347,7 +372,7 @@ public class Exe extends Thread {
         textField04.setEditable(false);
         textField04.setFont(new Font(null, Font.PLAIN, 14));
         //总条数赋值
-        textField04.setText(String.valueOf(finalTotal));
+        textField04.setText(String.valueOf(totalAccount));
         panel03.add(textField04);
         JLabel label05 = new JLabel();
         label05.setText("当前序号:");
@@ -453,7 +478,7 @@ public class Exe extends Thread {
         JPanel panel = new JPanel(new BorderLayout());
         // 表头（列名）
         Object[] columnNames = {"账号", "密码"};
-        LinkedHashMap<String, String> keyValueMap = PropertiesUtil.getKeyValueMap();
+        LinkedHashMap<String, String> keyValueMap = PropertiesUtil.getKeyValueMap(accountFilePath);
         Set<Map.Entry<String, String>> entries = keyValueMap.entrySet();
         Iterator<Map.Entry<String, String>> iterator = entries.iterator();
         int rows = entries.size();
@@ -515,7 +540,7 @@ public class Exe extends Thread {
                     System.out.println("map封装" + updateMap.toString());
                     //将一个Map<String, String>写入properties文件,并且覆盖原来的内容
                     try {
-                        PropertiesUtil.writeProperties(updateMap);
+                        PropertiesUtil.writeProperties(accountFilePath,updateMap);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -577,10 +602,121 @@ public class Exe extends Thread {
         //清空JTextArea数据
         textAreaDemo.setText("");
         //获取账号列表
-        Set<String> keys = PropertiesUtil.getKeys();
+        Set<String> keys = PropertiesUtil.getKeys(accountFilePath);
         int i = 0;
         for (String key : keys) {
             textAreaDemo.append("【账号" + ++i + "】 " + "" + key + "" + "\r\n");
+        }
+    }
+
+    private JPanel getPanel02_product() {
+        JPanel panel02_product = new JPanel();
+        // 创建一个文本区域, 用于接收拖拽目标, 并在文本区域内输出相应的拖拽数据
+        JTextArea textArea02_product = new JTextArea(30,40 );
+        textArea02_product.setLineWrap(true);                 // 自动换行
+        panel02_product.add(new JScrollPane(textArea02_product));       // 使用 JScrollPane 包裹, 方便内容过多时支持滚动
+        // 创建拖拽目标监听器
+        DropTargetListener listener02_product = new DropTargetListenerImpl(textArea02_product);
+        // 在 textArea 上注册拖拽目标监听器
+        DropTarget dropTarget = new DropTarget(textArea02_product, DnDConstants.ACTION_COPY_OR_MOVE, listener02_product, true);
+        // 如果要移除监听器, 可以调用下面代码
+        // dropTarget.removeDropTargetListener(listener);
+        jf.setContentPane(panel02_product);
+        jf.pack();
+        jf.setLocationRelativeTo(null);
+        return panel02_product;
+    }
+    /**
+     * 拖拽目标监听器实现
+     */
+    private static class DropTargetListenerImpl implements DropTargetListener {
+
+        /** 用于显示拖拽的数据 */
+        private JTextArea textArea;
+
+        public DropTargetListenerImpl(JTextArea textArea) {
+            this.textArea = textArea;
+        }
+
+        @Override
+        public void dragEnter(DropTargetDragEvent dtde) {
+            System.out.println("dragEnter: 拖拽目标进入组件区域");
+        }
+
+        @Override
+        public void dragOver(DropTargetDragEvent dtde) {
+            System.out.println("dragOver: 拖拽目标在组件区域内移动");
+        }
+
+        @Override
+        public void dragExit(DropTargetEvent dte) {
+            System.out.println("dragExit: 拖拽目标离开组件区域");
+        }
+
+        @Override
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+            System.out.println("dropActionChanged: 当前 drop 操作被修改");
+        }
+
+        @Override
+        public void drop(DropTargetDropEvent dtde) {
+            // 一般情况下只需要关心此方法的回调
+            System.out.println("drop: 拖拽目标在组件区域内释放");
+            boolean isAccept = false;
+            try {
+                /*
+                 * 1. 文件: 判断拖拽目标是否支持文件列表数据（即拖拽的是否是文件或文件夹, 支持同时拖拽多个）
+                 */
+                if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    // 接收拖拽目标数据
+                    dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                    isAccept = true;
+                    // 以文件集合的形式获取数据
+                    List<File> files = (List<File>) dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    // 把文件路径输出到文本区域
+                    if (files != null && files.size() > 0) {
+                        StringBuilder filePaths = new StringBuilder();
+                        for (File file : files) {
+                            TxtUtil.readAndWriteTxt(file.getAbsolutePath());
+                            filePaths.append(file.getAbsolutePath());
+
+                        }
+                        textArea.append(filePaths.toString());
+                    }
+                }
+                /*
+                 * 2. 文本: 判断拖拽目标是否支持文本数据（即拖拽的是否是文本内容, 或者是否支持以文本的形式获取）
+                 */
+                if (dtde.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    // 接收拖拽目标数据
+                    dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                    isAccept = true;
+                    // 以文本的形式获取数据
+                    String text = dtde.getTransferable().getTransferData(DataFlavor.stringFlavor).toString();
+                    // 输出到文本区域
+                    textArea.append("文本: " + text + "\n");
+                }
+                /*
+                 * 3. 图片: 判断拖拽目标是否支持图片数据。注意: 拖拽图片不是指以文件的形式拖拽图片文件,
+                 *          而是指拖拽一个正在屏幕上显示的并且支持拖拽的图片（例如网页上显示的图片）。
+                 */
+                if (dtde.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+                    // 接收拖拽目标数据
+                    dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                    isAccept = true;
+                    // 以图片的形式获取数据
+                    Image image = (Image) dtde.getTransferable().getTransferData(DataFlavor.imageFlavor);
+                    // 获取到 image 对象后, 可以对该图片进行相应的操作（例如: 用组件显示、图形变换、保存到本地等）,
+                    // 这里只把图片的宽高输出到文本区域
+                    textArea.append("图片: " + image.getWidth(null) + " * " + image.getHeight(null) + "\n");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // 如果此次拖拽的数据是被接受的, 则必须设置拖拽完成（否则可能会看到拖拽目标返回原位置, 造成视觉上以为是不支持拖拽的错误效果）
+            if (isAccept) {
+                dtde.dropComplete(true);
+            }
         }
     }
 }
