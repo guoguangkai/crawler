@@ -47,9 +47,8 @@ public class Exe extends Thread {
     DateFormat df = DateFormat.getDateTimeInstance();
     String nowDateTime = df.format(date);
     DefaultTableModel model;
-    JTextArea textArea01 = new JTextArea(29, 20);
+    JTextArea textArea01 = new JTextArea(14, 22);
     JTextArea textArea  = new JTextArea(25, 20);
-    ;
 
 
     //通过构造器  校验时多线程传参
@@ -59,14 +58,11 @@ public class Exe extends Thread {
     }
 
     public Exe() {
-        //获取JVM的系统属性
-        Properties pps = System.getProperties();
-        pps.list(System.out);
 
         //创建一个顶层容器（窗口）
         jf = new JFrame("中港星自动化程序");
         //设置窗口大小
-        jf.setSize(300, 600);
+        jf.setSize(300, 625);
         //把窗口位置设置到屏幕中心
         jf.setLocationRelativeTo(null);
         //当点击窗口的关闭按钮时退出程序（没有这一句，程序不会退出）
@@ -106,7 +102,48 @@ public class Exe extends Thread {
     private JPanel getPanel01() {
         //创建中间容器（面板容器）使用流式布局管理器
         final JPanel panel01 = new JPanel(new FlowLayout());
-        // 创建 账号管理 按钮
+        JLabel infoLabel = new JLabel();
+        infoLabel.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
+        panel01.add(infoLabel);
+        // 创建 直接开始 按钮
+        final JButton asUsualStartBtn = new JButton("无需管理账号及产品，直接开始");
+        // 添加按钮的点击事件监听器
+        asUsualStartBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
+                panel01.hide();
+                jf.setSize(600, 800);
+                //把 面板容器 作为窗口的内容面板 设置到 窗口
+                JPanel panel03 = getPanel03();
+                jf.setContentPane(panel03);
+                try {
+                    new ThreadCrawler().start();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        panel01.add(asUsualStartBtn);
+
+        // 设置自动换行
+        textArea01.setLineWrap(true);
+        //背景颜色
+        textArea01.setBackground(Color.LIGHT_GRAY);
+        // 设置文本框是否可编辑
+        textArea01.setEditable(false);
+        //自动换行
+        textArea01.setLineWrap(true);
+        //获取账号列表
+        setTextArea(textArea01);
+        // 创建滚动面板, 指定滚动显示的视图组件(textArea), 垂直滚动条一直显示, 水平滚动条从不显示
+        JScrollPane scrollPane01 = new JScrollPane(
+                textArea01,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        panel01.add(scrollPane01);
+      // 创建 账号管理 按钮
         final JButton editBtn = new JButton("    账号管理    ");
         // 添加按钮的点击事件监听器
         editBtn.addActionListener(new ActionListener() {
@@ -118,6 +155,26 @@ public class Exe extends Thread {
             }
         });
         panel01.add(editBtn);
+
+        JTextArea UrlTextArea = new JTextArea(16,22);
+        // 设置自动换行
+        UrlTextArea.setLineWrap(true);
+        //背景颜色
+        UrlTextArea.setBackground(Color.LIGHT_GRAY);
+        // 设置文本框是否可编辑
+        UrlTextArea.setEditable(false);
+        //自动换行
+        UrlTextArea.setLineWrap(true);
+        //获取账号列表
+        setUrlTextArea(UrlTextArea);
+        // 创建滚动面板, 指定滚动显示的视图组件(textArea), 垂直滚动条一直显示, 水平滚动条从不显示
+        JScrollPane scrollPane02 = new JScrollPane(
+                UrlTextArea,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        panel01.add(scrollPane02);
+
         // 创建 产品管理 按钮
         final JButton productBtn = new JButton("    产品管理    ");
         // 添加按钮的点击事件监听器
@@ -138,48 +195,6 @@ public class Exe extends Thread {
             }
         });
         panel01.add(productBtn);
-        // 创建 直接开始 按钮
-        final JButton asUsualStartBtn = new JButton("无需管理账号及产品，直接开始");
-        // 添加按钮的点击事件监听器
-        asUsualStartBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
-                panel01.hide();
-                jf.setSize(500, 800);
-                //把 面板容器 作为窗口的内容面板 设置到 窗口
-                JPanel panel03 = getPanel03();
-                jf.setContentPane(panel03);
-                try {
-                    new ThreadCrawler().start();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        panel01.add(asUsualStartBtn);
-        //说明
-        JLabel infoLabel = new JLabel();
-        infoLabel.setText("    ▼  账号列表  ▼    ");
-        infoLabel.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
-        panel01.add(infoLabel);
-        // 设置自动换行
-        textArea01.setLineWrap(true);
-        //背景颜色
-        textArea01.setBackground(Color.LIGHT_GRAY);
-        // 设置文本框是否可编辑
-        textArea01.setEditable(false);
-        //自动换行
-        textArea01.setLineWrap(true);
-        //获取账号列表
-        setTextArea(textArea01);
-        // 创建滚动面板, 指定滚动显示的视图组件(textArea), 垂直滚动条一直显示, 水平滚动条从不显示
-        JScrollPane scrollPane01 = new JScrollPane(
-                textArea01,
-                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-        );
-        panel01.add(scrollPane01);
         return panel01;
     }
 
@@ -287,9 +302,28 @@ public class Exe extends Thread {
         panel02.add(continueBtn);
         // 添加到内容面板(放在这里，是为了在前面两个按钮下面)
         panel02.add(scrollPane);
+        // 创建一个按钮，点击后取消返回
+        JButton backBtn = new JButton("返回");
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //设置窗口大小
+                jf.setSize(300, 625);
+                //把窗口位置设置到屏幕中心
+                jf.setLocationRelativeTo(null);
+                //当点击窗口的关闭按钮时退出程序（没有这一句，程序不会退出）
+                jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                //禁止缩放
+                jf.setResizable(false);
+                panel02.hide();
+                jf.setContentPane(getPanel01());
+                //显示窗口，前面创建的信息都在内存中，通过 jf.setVisible(true) 把内存中的窗口显示在屏幕上。
+                jf.setVisible(true);
+            }
+        });
+        panel02.add(backBtn);
         // 创建一个按钮，点击后开始运行程序
         JButton startBtn = new JButton("开始程序");
-
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -304,7 +338,7 @@ public class Exe extends Thread {
                     case 0:
                         totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
                         panel02.hide();
-                        jf.setSize(500, 800);
+                        jf.setSize(600, 800);
                         JPanel panel03 = getPanel03();
                         jf.setContentPane(panel03);
                         new ThreadCrawler().start();
@@ -325,12 +359,12 @@ public class Exe extends Thread {
      */
     @SuppressWarnings("all")
     private static JPanel getPanel03() {
-        JPanel panel03 = new JPanel();
 
+        JPanel panel03 = new JPanel();
         // 创建一个进度条
         final JProgressBar progressBar = new JProgressBar();
         //设置长度，高度
-        progressBar.setPreferredSize(new Dimension(420, 15));
+        progressBar.setPreferredSize(new Dimension(590, 15));
         // 设置进度的 最小值 和 最大值
         progressBar.setMinimum(MIN_PROGRESS);
         progressBar.setMaximum(MAX_PROGRESS);
@@ -351,7 +385,7 @@ public class Exe extends Thread {
         jf.setContentPane(panel03);
         jf.setVisible(true);
         // 模拟延时操作进度, 每隔 0.5 秒更新进度
-        new Timer(500, new ActionListener() {
+        new Timer(5000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 currentProgress++;
@@ -363,7 +397,7 @@ public class Exe extends Thread {
         }).start();
 
         JLabel label04 = new JLabel();
-        label04.setText("  账号总数:");
+        label04.setText("账号总数:");
         label04.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
         panel03.add(label04);
         final JTextField textField04 = new JTextField(3);
@@ -395,23 +429,43 @@ public class Exe extends Thread {
         textField03.setFont(new Font(null, Font.PLAIN, 11));
         panel03.add(textField03);
 
+        /**
+         * 重定向了控制台日志打印
+         */
         // 日志窗口
-        final JTextArea textArea02 = new JTextArea(43, 35);
+        ConsoleTextArea consoleTextArea = null;
+        try {
+            consoleTextArea = new ConsoleTextArea();
+        }
+        catch(IOException e) {
+            System.err.println("不能创建LoopedStreams：" + e);
+            System.exit(1);
+        }
+        consoleTextArea.setColumns(80);
+        consoleTextArea.setRows(41);
         // 设置自动换行
-        textArea02.setLineWrap(true);
+        consoleTextArea.setLineWrap(true);
         //背景颜色
-        textArea02.setBackground(Color.LIGHT_GRAY);
+        consoleTextArea.setBackground(Color.LIGHT_GRAY);
         // 设置文本框是否可编辑
-        textArea02.setEditable(false);
-        //自动换行
-        textArea02.setLineWrap(true);
-        // 创建滚动面板, 指定滚动显示的视图组件(textArea), 垂直滚动条一直显示, 水平滚动条从不显示
-        JScrollPane scrollPane02 = new JScrollPane(
-                textArea02,
-                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-        );
-        panel03.add(scrollPane02);
+        consoleTextArea.setEditable(false);
+        consoleTextArea.setFont(java.awt.Font.decode("monospaced"));
+        panel03.add(new JScrollPane(consoleTextArea),
+                java.awt.BorderLayout.CENTER);
+        jf.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(
+                    java.awt.event.WindowEvent evt) {
+                System.exit(0);
+            }
+        });
+        // 启动几个写操作线程向
+        // System.out和System.err输出
+        ConsoleTextArea.startWriterTestThread(
+                "写操作线程 #1", System.err, 500, 50);
+        ConsoleTextArea.startWriterTestThread(
+                "写操作线程 #2", System.out, 300, 50);
+        ConsoleTextArea.startWriterTestThread(
+                "写操作线程 #3", System.out, 100, 50);
         return panel03;
     }
 
@@ -601,20 +655,65 @@ public class Exe extends Thread {
     private void setTextArea(JTextArea textAreaDemo) {
         //清空JTextArea数据
         textAreaDemo.setText("");
-        //获取账号列表
+        //获取并填充账号列表
         Set<String> keys = PropertiesUtil.getKeys(accountFilePath);
         int i = 0;
         for (String key : keys) {
             textAreaDemo.append("【账号" + ++i + "】 " + "" + key + "" + "\r\n");
         }
     }
-
+    private void setUrlTextArea(JTextArea textAreaDemo) {
+        //清空JTextArea数据
+        textAreaDemo.setText("");
+        //获取并填充url列表
+        Set<String> keys = PropertiesUtil.getKeys(urlFilePath);
+        Iterator<String> iterator = keys.iterator();
+        while (iterator.hasNext()) {
+            textAreaDemo.append(PropertiesUtil.getValueByKey(urlFilePath, iterator.next()) + "\n");
+        }
+    }
+    JTextArea textArea03_product;
     private JPanel getPanel02_product() {
-        JPanel panel02_product = new JPanel();
+        final JPanel panel02_product = new JPanel();
+        textArea03_product = new JTextArea(25,25 );
+        textArea03_product.setLineWrap(true);                 // 自动换行
+        textArea03_product.setEditable(false);
+        textArea03_product.setBackground(Color.LIGHT_GRAY);
+        JScrollPane scrollPane00 = new JScrollPane(
+                textArea03_product,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        panel02_product.add(scrollPane00);
+        final JButton okBtn = new JButton("确认修改");
+        // 添加按钮的点击事件监听器
+        okBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //设置窗口大小
+                jf.setSize(300, 625);
+                //把窗口位置设置到屏幕中心
+                jf.setLocationRelativeTo(null);
+                //当点击窗口的关闭按钮时退出程序（没有这一句，程序不会退出）
+                jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                //禁止缩放
+                jf.setResizable(false);
+                panel02_product.hide();
+                jf.setContentPane(getPanel01());
+                //显示窗口，前面创建的信息都在内存中，通过 jf.setVisible(true) 把内存中的窗口显示在屏幕上。
+               jf.setVisible(true);
+            }
+        });
+        panel02_product.add(okBtn);
+
         // 创建一个文本区域, 用于接收拖拽目标, 并在文本区域内输出相应的拖拽数据
-        JTextArea textArea02_product = new JTextArea(30,40 );
-        textArea02_product.setLineWrap(true);                 // 自动换行
-        panel02_product.add(new JScrollPane(textArea02_product));       // 使用 JScrollPane 包裹, 方便内容过多时支持滚动
+        JTextArea textArea02_product = new JTextArea(20,25 );
+        textArea02_product.setLineWrap(true);   // 自动换行
+        textArea02_product.setText("请将网址文件拖拽至此完成配置");
+        Font font = new Font("Serif",2,15);
+        textArea02_product.setFont(font);
+        textArea02_product.setForeground(Color.RED);
+        panel02_product.add(new JScrollPane(textArea02_product));
         // 创建拖拽目标监听器
         DropTargetListener listener02_product = new DropTargetListenerImpl(textArea02_product);
         // 在 textArea 上注册拖拽目标监听器
@@ -626,10 +725,11 @@ public class Exe extends Thread {
         jf.setLocationRelativeTo(null);
         return panel02_product;
     }
+
     /**
      * 拖拽目标监听器实现
      */
-    private static class DropTargetListenerImpl implements DropTargetListener {
+    private class DropTargetListenerImpl implements DropTargetListener {
 
         /** 用于显示拖拽的数据 */
         private JTextArea textArea;
@@ -675,19 +775,27 @@ public class Exe extends Thread {
                     List<File> files = (List<File>) dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
                     // 把文件路径输出到文本区域
                     if (files != null && files.size() > 0) {
-                        StringBuilder filePaths = new StringBuilder();
+                        String filePaths = new String();
                         for (File file : files) {
                             TxtUtil.readAndWriteTxt(file.getAbsolutePath());
-                            filePaths.append(file.getAbsolutePath());
-
+                            filePaths=file.getAbsolutePath();
                         }
-                        textArea.append(filePaths.toString());
+                        Set<String> keys = PropertiesUtil.getKeys(urlFilePath);
+                        Iterator<String> iterator = keys.iterator();
+                        while (iterator.hasNext()) {
+                            textArea03_product.append(PropertiesUtil.getValueByKey(urlFilePath, iterator.next()) + "\n");
+                        }
+                        Font font = new Font("Serif",1,15);
+                        textArea.setFont(font);
+                        textArea.setForeground(Color.decode("#006400"));
+                        textArea.setText("网址配置文件  "+filePaths+"  添加成功✔");
+
                     }
                 }
                 /*
                  * 2. 文本: 判断拖拽目标是否支持文本数据（即拖拽的是否是文本内容, 或者是否支持以文本的形式获取）
                  */
-                if (dtde.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+               /* if (dtde.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     // 接收拖拽目标数据
                     dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
                     isAccept = true;
@@ -695,12 +803,12 @@ public class Exe extends Thread {
                     String text = dtde.getTransferable().getTransferData(DataFlavor.stringFlavor).toString();
                     // 输出到文本区域
                     textArea.append("文本: " + text + "\n");
-                }
+                }*/
                 /*
                  * 3. 图片: 判断拖拽目标是否支持图片数据。注意: 拖拽图片不是指以文件的形式拖拽图片文件,
                  *          而是指拖拽一个正在屏幕上显示的并且支持拖拽的图片（例如网页上显示的图片）。
                  */
-                if (dtde.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+                /*if (dtde.isDataFlavorSupported(DataFlavor.imageFlavor)) {
                     // 接收拖拽目标数据
                     dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
                     isAccept = true;
@@ -709,7 +817,7 @@ public class Exe extends Thread {
                     // 获取到 image 对象后, 可以对该图片进行相应的操作（例如: 用组件显示、图形变换、保存到本地等）,
                     // 这里只把图片的宽高输出到文本区域
                     textArea.append("图片: " + image.getWidth(null) + " * " + image.getHeight(null) + "\n");
-                }
+                }*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
