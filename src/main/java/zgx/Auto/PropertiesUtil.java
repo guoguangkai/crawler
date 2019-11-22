@@ -132,13 +132,13 @@ public class PropertiesUtil {
      * @return
      */
     public static void writeProperties(String filepath,Map<String, String> map) throws IOException {
-       /* Properties properties=new Properties();
+        Properties properties=new Properties();
         for (String key : map.keySet()) {
             properties.setProperty(key, map.get(key));
         }
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(filepath)), "UTF-8"));
         properties.store(bw,properties.toString());
-        bw.close();*/
+        bw.close();
 
     }
 

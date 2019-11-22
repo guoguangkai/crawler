@@ -42,12 +42,13 @@ public class Exe extends Thread {
     private String currentAccountOrder = "";
     String accountFilePath = "src/resources/account.properties";
     String urlFilePath = "src/resources/url.properties";
+    private boolean toggleBtnFlag = false;
 
     Date date = new Date();
     DateFormat df = DateFormat.getDateTimeInstance();
     String nowDateTime = df.format(date);
     DefaultTableModel model;
-    JTextArea textArea01 = new JTextArea(14, 22);
+    JTextArea textArea01 = new JTextArea(11, 22);
     JTextArea textArea  = new JTextArea(25, 20);
 
 
@@ -78,7 +79,7 @@ public class Exe extends Thread {
         @Override
         public void run() {
             try {
-                CrawlerUrl.CrawlerUrl(urlFilePath,accountFilePath,totalAccount,totalUrl);
+                CrawlerUrl.CrawlerUrl(urlFilePath,accountFilePath,totalAccount,totalUrl,toggleBtnFlag);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -105,15 +106,51 @@ public class Exe extends Thread {
         JLabel infoLabel = new JLabel();
         infoLabel.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
         panel01.add(infoLabel);
+
+        //加顶部背景图
+        ImageIcon ico=new ImageIcon("src/resources/png/中港星集团透明.png");
+        ico.setImage(ico.getImage().getScaledInstance(260,60,Image.SCALE_DEFAULT));
+        final JButton btTest = new JButton(ico);
+        JLabel jLabel = new JLabel(ico);
+        panel01.add(jLabel);
+
+        // 创建开关按钮
+        JToggleButton toggleBtn = new JToggleButton();
+        toggleBtn.setText("开发者模式");
+        // 首先设置不绘制按钮边框
+        toggleBtn.setBorderPainted(false);
+        toggleBtn.setBackground(Color.decode("#EEEEEE"));
+        // 设置 选中(开) 和 未选中(关) 时显示的图片
+        toggleBtn.setSelectedIcon(new ImageIcon("src/resources/png/开关-开.png"));
+        toggleBtn.setIcon(new ImageIcon("src/resources/png/开关-关.png"));
+        // 添加 toggleBtn 的状态被改变的监听
+        toggleBtn.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                // 获取事件源（即开关按钮本身）
+                JToggleButton toggleBtn = (JToggleButton) e.getSource();
+                System.out.println(toggleBtn.getText() + " 是否选中: " + toggleBtn.isSelected());
+                if (toggleBtn.isSelected()) {
+                    toggleBtnFlag = true;
+                }else {
+                    toggleBtnFlag = false;
+                }
+            }
+        });
+        panel01.add(toggleBtn);
+
         // 创建 直接开始 按钮
-        final JButton asUsualStartBtn = new JButton("无需管理账号及产品，直接开始");
+        final JButton asUsualStartBtn = new JButton("无需管理账号及产品，直接开始    ");
+        //加图标
+        Icon asusualStartIcon = new ImageIcon("src/resources/png/开始.png");
+        asUsualStartBtn.setIcon(asusualStartIcon);
         // 添加按钮的点击事件监听器
         asUsualStartBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
                 panel01.hide();
-                jf.setSize(600, 800);
+                jf.setSize(400, 800);
                 //把 面板容器 作为窗口的内容面板 设置到 窗口
                 JPanel panel03 = getPanel03();
                 jf.setContentPane(panel03);
@@ -144,7 +181,10 @@ public class Exe extends Thread {
         );
         panel01.add(scrollPane01);
       // 创建 账号管理 按钮
-        final JButton editBtn = new JButton("    账号管理    ");
+        final JButton editBtn = new JButton("账号管理    ");
+        //加图标
+        Icon accountIcon = new ImageIcon("src/resources/png/管理客户.png");
+        editBtn.setIcon(accountIcon);
         // 添加按钮的点击事件监听器
         editBtn.addActionListener(new ActionListener() {
             @Override
@@ -156,7 +196,7 @@ public class Exe extends Thread {
         });
         panel01.add(editBtn);
 
-        JTextArea UrlTextArea = new JTextArea(16,22);
+        JTextArea UrlTextArea = new JTextArea(11,22);
         // 设置自动换行
         UrlTextArea.setLineWrap(true);
         //背景颜色
@@ -176,7 +216,10 @@ public class Exe extends Thread {
         panel01.add(scrollPane02);
 
         // 创建 产品管理 按钮
-        final JButton productBtn = new JButton("    产品管理    ");
+        final JButton productBtn = new JButton("网址管理   ");
+        //加图标
+        Icon IproductIcon = new ImageIcon("src/resources/png/站点网站互联网ie.png");
+        productBtn.setIcon(IproductIcon);
         // 添加按钮的点击事件监听器
         productBtn.addActionListener(new ActionListener() {
             @Override
@@ -209,20 +252,20 @@ public class Exe extends Thread {
         //账号 字
         JLabel accountLabel = new JLabel();
         accountLabel.setText("账号");
-        accountLabel.setFont(new Font(null, Font.PLAIN, 25));  // 设置字体，null 表示使用默认字体
+        accountLabel.setFont(new Font(null, Font.BOLD, 25));  // 设置字体，null 表示使用默认字体
         panel02.add(accountLabel);
         // 账号 输入框
         final JTextField userField = new JTextField(12);
-        userField.setFont(new Font(null, Font.PLAIN, 20));
+        userField.setFont(new Font(null, Font.BOLD, 20));
         panel02.add(userField);
         //密码 字
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("密码");
-        passwordLabel.setFont(new Font(null, Font.PLAIN, 25));  // 设置字体，null 表示使用默认字体
+        passwordLabel.setFont(new Font(null, Font.BOLD, 25));  // 设置字体，null 表示使用默认字体
         panel02.add(passwordLabel);
         // 密码 输入框
         final JTextField passwordField = new JTextField(12);
-        passwordField.setFont(new Font(null, Font.PLAIN, 20));
+        passwordField.setFont(new Font(null, Font.BOLD, 20));
         panel02.add(passwordField);
         // 显示域
         // 设置自动换行
@@ -266,7 +309,10 @@ public class Exe extends Thread {
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         );
         // 创建一个按钮，点击后校验账号
-        final JButton checkBtn = new JButton("校验账号");
+        final JButton checkBtn = new JButton("检测账号  ");
+        //加图标
+        Icon checkIcon = new ImageIcon("src/resources/png/检测.png");
+        checkBtn.setIcon(checkIcon);
         checkBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -279,7 +325,10 @@ public class Exe extends Thread {
         });
         panel02.add(checkBtn);
         // 创建一个按钮，点击后进行输入值的基础校验，通过则将输入值保存文件并清空输入框
-        JButton continueBtn = new JButton("添加账号");
+        JButton continueBtn = new JButton("添加账号   ");
+        //加图标
+        Icon addIcon = new ImageIcon("src/resources/png/添加.png");
+        continueBtn.setIcon(addIcon);
         continueBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -303,7 +352,10 @@ public class Exe extends Thread {
         // 添加到内容面板(放在这里，是为了在前面两个按钮下面)
         panel02.add(scrollPane);
         // 创建一个按钮，点击后取消返回
-        JButton backBtn = new JButton("返回");
+        JButton backBtn = new JButton("返回   ");
+        //加图标
+        Icon backIcon = new ImageIcon("src/resources/png/返回.png");
+        backBtn.setIcon(backIcon);
         backBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -323,7 +375,10 @@ public class Exe extends Thread {
         });
         panel02.add(backBtn);
         // 创建一个按钮，点击后开始运行程序
-        JButton startBtn = new JButton("开始程序");
+        JButton startBtn = new JButton("开始程序   ");
+        //加图标
+        Icon sIcon = new ImageIcon("src/resources/png/开始_2.png");
+        startBtn.setIcon(sIcon);
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -338,7 +393,7 @@ public class Exe extends Thread {
                     case 0:
                         totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
                         panel02.hide();
-                        jf.setSize(600, 800);
+                        jf.setSize(400, 800);
                         JPanel panel03 = getPanel03();
                         jf.setContentPane(panel03);
                         new ThreadCrawler().start();
@@ -364,7 +419,7 @@ public class Exe extends Thread {
         // 创建一个进度条
         final JProgressBar progressBar = new JProgressBar();
         //设置长度，高度
-        progressBar.setPreferredSize(new Dimension(590, 15));
+        progressBar.setPreferredSize(new Dimension(390, 15));
         // 设置进度的 最小值 和 最大值
         progressBar.setMinimum(MIN_PROGRESS);
         progressBar.setMaximum(MAX_PROGRESS);
@@ -441,7 +496,7 @@ public class Exe extends Thread {
             System.err.println("不能创建LoopedStreams：" + e);
             System.exit(1);
         }
-        consoleTextArea.setColumns(80);
+        consoleTextArea.setColumns(55);
         consoleTextArea.setRows(41);
         // 设置自动换行
         consoleTextArea.setLineWrap(true);
@@ -561,6 +616,9 @@ public class Exe extends Thread {
         panel.add(table, BorderLayout.CENTER);
         //确定按钮
         JButton okBtn = new JButton("确认修改");
+        //加图标
+        Icon oIcon = new ImageIcon("src/resources/png/确认_2.png");
+        okBtn.setIcon(oIcon);
         okBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -606,6 +664,9 @@ public class Exe extends Thread {
         panel.add(okBtn, BorderLayout.PAGE_START);
         //删除按钮
         JButton deleteBtn = new JButton("删除");
+        //加图标
+        Icon deleteIcon = new ImageIcon("src/resources/png/删除.png");
+        deleteBtn.setIcon(deleteIcon);
         deleteBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -685,7 +746,33 @@ public class Exe extends Thread {
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         );
         panel02_product.add(scrollPane00);
-        final JButton okBtn = new JButton("确认修改");
+       /* // 创建一个按钮，点击后取消返回
+        JButton backBtn1 = new JButton("返回   ");
+        //加图标
+        Icon backIcon = new ImageIcon("src/resources/png/返回.png");
+        backBtn1.setIcon(backIcon);
+        backBtn1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //设置窗口大小
+                jf.setSize(300, 625);
+                //把窗口位置设置到屏幕中心
+                jf.setLocationRelativeTo(null);
+                //当点击窗口的关闭按钮时退出程序（没有这一句，程序不会退出）
+                jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                //禁止缩放
+                jf.setResizable(false);
+                panel02_product.hide();
+                jf.setContentPane(getPanel01());
+                //显示窗口，前面创建的信息都在内存中，通过 jf.setVisible(true) 把内存中的窗口显示在屏幕上。
+                jf.setVisible(true);
+            }
+        });*/
+       /* panel02_product.add(backBtn1);*/
+        final JButton okBtn = new JButton("确认返回");
+        //加图标
+        Icon okIcon = new ImageIcon("src/resources/png/确认.png");
+        okBtn.setIcon(okIcon);
         // 添加按钮的点击事件监听器
         okBtn.addActionListener(new ActionListener() {
             @Override
@@ -705,7 +792,6 @@ public class Exe extends Thread {
             }
         });
         panel02_product.add(okBtn);
-
         // 创建一个文本区域, 用于接收拖拽目标, 并在文本区域内输出相应的拖拽数据
         JTextArea textArea02_product = new JTextArea(20,25 );
         textArea02_product.setLineWrap(true);   // 自动换行
@@ -826,6 +912,13 @@ public class Exe extends Thread {
                 dtde.dropComplete(true);
             }
         }
+    }
+
+    public void setIcon(String file,JButton com){
+        ImageIcon ico=new ImageIcon(file);
+        Image temp=ico.getImage().getScaledInstance(com.getWidth(),com.getHeight(),ico.getImage().SCALE_DEFAULT);
+        ico=new ImageIcon(temp);
+        com.setIcon(ico);
     }
 }
 

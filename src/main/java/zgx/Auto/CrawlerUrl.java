@@ -14,18 +14,18 @@ public class CrawlerUrl {
     private static int totalAccount;
     static int count=1;
 
-    public static void CrawlerUrl(String urlFilePath,String accountFilePath,int totalAccount1,int totalUrl) throws InterruptedException {
+    public static void CrawlerUrl(String urlFilePath,String accountFilePath,int totalAccount1,int totalUrl,boolean flag) throws InterruptedException {
         totalAccount = totalAccount1;
         for (int k = 1; k <= totalUrl; k++) {
             if (k == totalUrl) {
-                System.out.println("------------------------执行最后一个网页----------------------------");
+                System.out.println("------------执行最后一个网页------------");
             }
             i = 0;
-            initWindows(urlFilePath,accountFilePath,k);
+            initWindows(urlFilePath,accountFilePath,k,flag);
         }
     }
 
-    private  static void initWindows(String filepath,String accountFilePath,int UrlIndex) throws InterruptedException {
+    private  static void initWindows(String filepath,String accountFilePath,int UrlIndex,boolean flag) throws InterruptedException {
         String key = "webdriver.chrome.driver";
         //chromedriver本地服务地址
         String value = "src/resources/baseSoftware/chromedriver.exe";
@@ -33,9 +33,11 @@ public class CrawlerUrl {
         ChromeOptions chromeOptions = new ChromeOptions();
         //设置默认窗口最大
         chromeOptions.addArguments("--start-maximized");
-        //后台运行
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--disable-gpu");
+        if (!flag) {
+            //后台运行
+            chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--disable-gpu");
+        }
         //新建一个WebDriver的对象，但是new的是FirefoxDriver的驱动
         WebDriver driver = new ChromeDriver(chromeOptions);
 
@@ -126,9 +128,9 @@ public class CrawlerUrl {
         i++;
         if (i == totalAccount) {
             driver.quit();
-            System.out.println("                 【重新拉起浏览器引擎 ◥◤ 努力打开下一个网页】");
+            System.out.println("      【重新拉起浏览器引擎 ◥◤ 努力打开下一个网页】");
         }else {
-            System.out.println("                                             已点击 "+ count +" 次  ｡◕‿◕｡      ");
+            System.out.println("                                  已点击 "+ count +" 次  ｡◕‿◕｡      ");
             System.out.println("执行递归函数");
             digui(driver1);
         }
