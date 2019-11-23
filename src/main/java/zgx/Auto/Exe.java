@@ -22,7 +22,7 @@ import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
 
-
+@SuppressWarnings("all")
 public class Exe extends Thread {
     //进度条常量
     private static final int MIN_PROGRESS = 0;
@@ -37,16 +37,13 @@ public class Exe extends Thread {
     private String userNum = "";
     private String passwdNum = "";
     private static int totalAccount ;
-    private int totalUrl ;
-    private String currentAccount = "";
-    private String currentAccountOrder = "";
+    private static int totalUrl ;
     String accountFilePath = "src/resources/account.properties";
     String urlFilePath = "src/resources/url.properties";
     private boolean toggleBtnFlag = false;
+    private static JTextField textField06;
+    private static JTextField textField07;
 
-    Date date = new Date();
-    DateFormat df = DateFormat.getDateTimeInstance();
-    String nowDateTime = df.format(date);
     DefaultTableModel model;
     JTextArea textArea01 = new JTextArea(11, 22);
     JTextArea textArea  = new JTextArea(25, 20);
@@ -150,7 +147,7 @@ public class Exe extends Thread {
             public void actionPerformed(ActionEvent e) {
                 totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
                 panel01.hide();
-                jf.setSize(400, 800);
+                jf.setSize(600, 800);
                 //把 面板容器 作为窗口的内容面板 设置到 窗口
                 JPanel panel03 = getPanel03();
                 jf.setContentPane(panel03);
@@ -393,7 +390,7 @@ public class Exe extends Thread {
                     case 0:
                         totalAccount = PropertiesUtil.getKeys(accountFilePath).size();
                         panel02.hide();
-                        jf.setSize(400, 800);
+                        jf.setSize(600, 800);
                         JPanel panel03 = getPanel03();
                         jf.setContentPane(panel03);
                         new ThreadCrawler().start();
@@ -419,7 +416,7 @@ public class Exe extends Thread {
         // 创建一个进度条
         final JProgressBar progressBar = new JProgressBar();
         //设置长度，高度
-        progressBar.setPreferredSize(new Dimension(390, 15));
+        progressBar.setPreferredSize(new Dimension(590, 15));
         // 设置进度的 最小值 和 最大值
         progressBar.setMinimum(MIN_PROGRESS);
         progressBar.setMaximum(MAX_PROGRESS);
@@ -452,37 +449,59 @@ public class Exe extends Thread {
         }).start();
 
         JLabel label04 = new JLabel();
-        label04.setText("账号总数:");
-        label04.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
+        label04.setText("账号总数: ");
+        label04.setFont(new Font(null, Font.ITALIC, 12));  // 设置字体，null 表示使用默认字体
         panel03.add(label04);
         final JTextField textField04 = new JTextField(3);
         //去除边框
         textField04.setBorder(new EmptyBorder(0, 0, 0, 0));
         textField04.setEditable(false);
-        textField04.setFont(new Font(null, Font.PLAIN, 14));
+        textField04.setFont(new Font(null, Font.BOLD, 12));
         //总条数赋值
         textField04.setText(String.valueOf(totalAccount));
         panel03.add(textField04);
+
         JLabel label05 = new JLabel();
-        label05.setText("当前序号:");
-        label05.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
+        label05.setText("网址总数: ");
+        label05.setFont(new Font(null, Font.ITALIC, 12));  // 设置字体，null 表示使用默认字体
         panel03.add(label05);
         final JTextField textField05 = new JTextField(3);
         //去除边框
         textField05.setBorder(new EmptyBorder(0, 0, 0, 0));
         textField05.setEditable(false);
-        textField05.setFont(new Font(null, Font.PLAIN, 11));
+        textField05.setFont(new Font(null, Font.BOLD, 12));
+        textField05.setText(String.valueOf(totalUrl));
         panel03.add(textField05);
-        JLabel label03 = new JLabel();
-        label03.setText("当前账号:");
-        label03.setFont(new Font(null, Font.PLAIN, 14));  // 设置字体，null 表示使用默认字体
-        panel03.add(label03);
-        final JTextField textField03 = new JTextField(16);
-        //去除边框
-        textField03.setBorder(new EmptyBorder(0, 0, 0, 0));
-        textField03.setEditable(false);
-        textField03.setFont(new Font(null, Font.PLAIN, 11));
-        panel03.add(textField03);
+
+        //加logo
+        ImageIcon ico=new ImageIcon("src/resources/png/logo.png");
+        ico.setImage(ico.getImage().getScaledInstance(25,25,Image.SCALE_DEFAULT));
+        /*final JButton btTest1 = new JButton(ico);*/
+        JLabel jLabel = new JLabel(ico);
+        panel03.add(jLabel);
+
+        JLabel label06 = new JLabel();
+        label06.setText("      当前执行账号: ");
+        label06.setFont(new Font(null, Font.ITALIC, 12));
+        panel03.add(label06);
+        textField06 = new JTextField(3);
+        textField06.setBorder(new EmptyBorder(0, 0, 0, 0));
+        textField06.setEditable(false);
+        textField06.setFont(new Font(null, Font.BOLD, 12));
+        textField06.setText("0");
+        panel03.add(textField06);
+
+        JLabel label07 = new JLabel();
+        label07.setText("当前执行网址: ");
+        label07.setFont(new Font(null, Font.ITALIC, 12));
+        panel03.add(label07);
+        textField07 = new JTextField(3);
+        textField07.setBorder(new EmptyBorder(0, 0, 0, 0));
+        textField07.setEditable(false);
+        textField07.setFont(new Font(null, Font.BOLD, 12));
+        textField07.setText("0");
+        panel03.add(textField07);
+
 
         /**
          * 重定向了控制台日志打印
@@ -496,7 +515,7 @@ public class Exe extends Thread {
             System.err.println("不能创建LoopedStreams：" + e);
             System.exit(1);
         }
-        consoleTextArea.setColumns(55);
+        consoleTextArea.setColumns(80);
         consoleTextArea.setRows(41);
         // 设置自动换行
         consoleTextArea.setLineWrap(true);
@@ -522,6 +541,15 @@ public class Exe extends Thread {
         ConsoleTextArea.startWriterTestThread(
                 "写操作线程 #3", System.out, 100, 50);
         return panel03;
+    }
+
+    public static void updateCurrentOrder(String currentAccountOrder,String currentUrlOrder) {
+        textField07.setText(String.valueOf(currentUrlOrder));
+        textField06.setText(String.valueOf(currentAccountOrder));
+    }
+
+    public static void updateCurrentUrlOrder(String currentUrlOrder) {
+        textField07.setText(String.valueOf(currentUrlOrder));
     }
 
     /**
